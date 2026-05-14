@@ -1,11 +1,31 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { categories, products } from '~/data/products'
+import type { Product } from '~/types/product'
 
 const searchQuery = ref('')
 const selectedCategory = ref('all')
 const selectedAvailability = ref('all')
 const selectedSort = ref('featured')
+const isCartOpen = ref(false)
+
+const {
+  cartItems,
+  addToCart,
+  removeFromCart,
+  increaseQuantity,
+  decreaseQuantity,
+  clearCart,
+  totalItems,
+  subtotal
+} = useCart()
+
+const formatPrice = (price: number) => {
+  return new Intl.NumberFormat('es-MX', {
+    style: 'currency',
+    currency: 'MXN'
+  }).format(price)
+}
 
 const filteredProducts = computed(() => {
   let result = [...products]
@@ -48,6 +68,21 @@ const filteredProducts = computed(() => {
   return result
 })
 
+const previewCartProducts = computed(() => {
+  return cartItems.value.slice(0, 2)
+})
+
+const previewSubtotal = computed(() => {
+  return previewCartProducts.value.reduce((total, item) => {
+    return total + item.product.price * item.quantity
+  }, 0)
+})
+
+const handleAddToCart = (product: Product) => {
+  addToCart(product)
+  isCartOpen.value = true
+}
+
 const resetFilters = () => {
   searchQuery.value = ''
   selectedCategory.value = 'all'
@@ -75,7 +110,10 @@ const resetFilters = () => {
           <a href="#contacto">Contacto</a>
         </nav>
 
-        <button class="btn btn-primary">Ver carrito</button>
+        <button class="btn btn-primary cart-button" @click="isCartOpen = true">
+          Ver carrito
+          <span>{{ totalItems }}</span>
+        </button>
       </div>
     </header>
 
@@ -110,8 +148,8 @@ const resetFilters = () => {
                 <span>Productos iniciales</span>
               </div>
               <div>
-                <strong>MXN</strong>
-                <span>Pago por transferencia</span>
+                <strong>{{ totalItems }}</strong>
+                <span>Productos en carrito</span>
               </div>
             </div>
           </div>
@@ -122,38 +160,38 @@ const resetFilters = () => {
               <small>Carrito</small>
             </div>
 
-            <div class="cart-preview">
-              <div class="cart-item">
-                <div class="product-image">CAM</div>
+            <div v-if="cartItems.length" class="cart-preview">
+              <div
+                v-for="item in previewCartProducts"
+                :key="item.product.id"
+                class="cart-item"
+              >
+                <div class="product-image">{{ item.product.imageLabel }}</div>
                 <div>
-                  <h3>Cámara IP profesional</h3>
-                  <p>Videovigilancia • Stock sujeto a disponibilidad</p>
-                  <strong>$2,499 MXN</strong>
-                </div>
-              </div>
-
-              <div class="cart-item">
-                <div class="product-image">DVR</div>
-                <div>
-                  <h3>DVR/NVR de seguridad</h3>
-                  <p>Grabación y monitoreo para proyectos</p>
-                  <strong>$3,299 MXN</strong>
+                  <h3>{{ item.product.name }}</h3>
+                  <p>Cantidad: {{ item.quantity }}</p>
+                  <strong>{{ formatPrice(item.product.price * item.quantity) }}</strong>
                 </div>
               </div>
             </div>
 
+            <div v-else class="hero-empty-cart">
+              <h3>Tu carrito está vacío</h3>
+              <p>Agrega productos del catálogo para ver el resumen de compra.</p>
+            </div>
+
             <div class="checkout-summary">
               <div>
-                <span>Subtotal</span>
-                <strong>$5,798 MXN</strong>
+                <span>Productos</span>
+                <strong>{{ totalItems }}</strong>
               </div>
               <div>
                 <span>Envío estimado</span>
                 <strong>Por confirmar</strong>
               </div>
               <div class="total">
-                <span>Total</span>
-                <strong>$5,798 MXN</strong>
+                <span>Subtotal</span>
+                <strong>{{ formatPrice(previewSubtotal || subtotal) }}</strong>
               </div>
             </div>
 
@@ -291,6 +329,7 @@ const resetFilters = () => {
               v-for="product in filteredProducts"
               :key="product.id"
               :product="product"
+              @add-to-cart="handleAddToCart"
             />
           </div>
 
@@ -343,6 +382,86 @@ const resetFilters = () => {
         </div>
       </section>
     </main>
+
+    <aside class="cart-drawer" :class="{ 'is-open': isCartOpen }">
+      <div class="cart-drawer-content card">
+        <div class="cart-drawer-header">
+          <div>
+            <span class="badge">Carrito de compras</span>
+            <h2>Tu pedido</h2>
+          </div>
+
+          <button class="close-button" @click="isCartOpen = false">
+            ×
+          </button>
+        </div>
+
+        <div v-if="cartItems.length" class="cart-list">
+          <div
+            v-for="item in cartItems"
+            :key="item.product.id"
+            class="drawer-item"
+          >
+            <div class="drawer-image">{{ item.product.imageLabel }}</div>
+
+            <div class="drawer-info">
+              <h3>{{ item.product.name }}</h3>
+              <p>{{ item.product.brand }} • {{ item.product.sku }}</p>
+              <strong>{{ formatPrice(item.product.price) }}</strong>
+
+              <div class="quantity-controls">
+                <button @click="decreaseQuantity(item.product.id)">−</button>
+                <span>{{ item.quantity }}</span>
+                <button @click="increaseQuantity(item.product.id)">+</button>
+              </div>
+            </div>
+
+            <button class="remove-button" @click="removeFromCart(item.product.id)">
+              Quitar
+            </button>
+          </div>
+        </div>
+
+        <div v-else class="drawer-empty">
+          <h3>Tu carrito está vacío</h3>
+          <p>Agrega productos para iniciar tu pedido.</p>
+        </div>
+
+        <div class="drawer-summary">
+          <div>
+            <span>Productos</span>
+            <strong>{{ totalItems }}</strong>
+          </div>
+
+          <div>
+            <span>Subtotal</span>
+            <strong>{{ formatPrice(subtotal) }}</strong>
+          </div>
+
+          <p>
+            El costo de envío y disponibilidad final se confirmarán antes de emitir el pedido.
+          </p>
+
+          <button class="btn btn-primary" :disabled="!cartItems.length">
+            Continuar pedido
+          </button>
+
+          <button
+            v-if="cartItems.length"
+            class="btn btn-secondary"
+            @click="clearCart"
+          >
+            Vaciar carrito
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <div
+      v-if="isCartOpen"
+      class="cart-overlay"
+      @click="isCartOpen = false"
+    />
 
     <footer id="contacto" class="footer">
       <div class="container footer-content">
@@ -411,6 +530,21 @@ const resetFilters = () => {
   color: #67e8f9;
 }
 
+.cart-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cart-button span {
+  min-width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(2, 6, 23, 0.35);
+}
+
 .hero {
   padding: 96px 0 72px;
 }
@@ -475,7 +609,9 @@ const resetFilters = () => {
 .panel-header,
 .footer-content,
 .checkout-summary div,
-.catalog-summary {
+.catalog-summary,
+.drawer-summary div,
+.cart-drawer-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -508,7 +644,8 @@ const resetFilters = () => {
   background: rgba(2, 6, 23, 0.5);
 }
 
-.product-image {
+.product-image,
+.drawer-image {
   height: 84px;
   border-radius: 16px;
   display: grid;
@@ -529,8 +666,27 @@ const resetFilters = () => {
 
 .cart-item strong,
 .checkout-summary strong,
-.catalog-summary strong {
+.catalog-summary strong,
+.drawer-summary strong,
+.drawer-info strong {
   color: #67e8f9;
+}
+
+.hero-empty-cart {
+  padding: 28px 18px;
+  margin: 28px 0;
+  border-radius: 18px;
+  background: rgba(2, 6, 23, 0.45);
+  text-align: center;
+}
+
+.hero-empty-cart h3 {
+  margin: 0 0 8px;
+}
+
+.hero-empty-cart p {
+  margin: 0;
+  color: #94a3b8;
 }
 
 .checkout-summary {
@@ -563,7 +719,8 @@ const resetFilters = () => {
 }
 
 .section-heading h2,
-.purchase-card h2 {
+.purchase-card h2,
+.cart-drawer-header h2 {
   font-size: clamp(30px, 4vw, 48px);
   line-height: 1;
   margin: 18px 0;
@@ -661,12 +818,14 @@ select:focus {
   text-align: center;
 }
 
-.empty-state h3 {
+.empty-state h3,
+.drawer-empty h3 {
   margin: 0 0 8px;
   color: white;
 }
 
-.empty-state p {
+.empty-state p,
+.drawer-empty p {
   margin: 0 0 22px;
   color: #94a3b8;
 }
@@ -707,6 +866,144 @@ select:focus {
 
 .purchase-steps p {
   margin: 0;
+}
+
+.cart-drawer {
+  position: fixed;
+  top: 0;
+  right: -460px;
+  width: min(440px, 100%);
+  height: 100vh;
+  z-index: 50;
+  transition: right 0.25s ease;
+  padding: 14px;
+}
+
+.cart-drawer.is-open {
+  right: 0;
+}
+
+.cart-drawer-content {
+  height: 100%;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+.close-button {
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 14px;
+  background: rgba(2, 6, 23, 0.6);
+  color: white;
+  cursor: pointer;
+  font-size: 26px;
+}
+
+.cart-list {
+  display: grid;
+  gap: 14px;
+  margin: 20px 0;
+}
+
+.drawer-item {
+  display: grid;
+  grid-template-columns: 74px 1fr;
+  gap: 14px;
+  position: relative;
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(2, 6, 23, 0.45);
+}
+
+.drawer-image {
+  height: 74px;
+  font-size: 13px;
+}
+
+.drawer-info h3 {
+  margin: 0 0 6px;
+  color: white;
+  font-size: 15px;
+}
+
+.drawer-info p {
+  margin: 0 0 8px;
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.quantity-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 6px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.85);
+}
+
+.quantity-controls button {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(34, 211, 238, 0.18);
+  color: #67e8f9;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.remove-button {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  border: none;
+  background: transparent;
+  color: #fca5a5;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.drawer-empty {
+  padding: 34px 0;
+  text-align: center;
+}
+
+.drawer-summary {
+  display: grid;
+  gap: 14px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+.drawer-summary span,
+.drawer-summary p {
+  color: #94a3b8;
+}
+
+.drawer-summary p {
+  line-height: 1.6;
+  margin: 0;
+  font-size: 14px;
+}
+
+.drawer-summary button {
+  width: 100%;
+}
+
+.drawer-summary button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cart-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(2, 6, 23, 0.62);
+  backdrop-filter: blur(4px);
 }
 
 .footer {

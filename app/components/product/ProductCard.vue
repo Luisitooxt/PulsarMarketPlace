@@ -5,6 +5,10 @@ defineProps<{
   product: Product
 }>()
 
+const emit = defineEmits<{
+  addToCart: [product: Product]
+}>()
+
 const formatPrice = (price: number) => {
   return new Intl.NumberFormat('es-MX', {
     style: 'currency',
@@ -60,7 +64,11 @@ const availabilityClass = {
           <span v-if="product.oldPrice">{{ formatPrice(product.oldPrice) }}</span>
         </div>
 
-        <button class="btn btn-secondary" :disabled="product.availability === 'agotado'">
+        <button
+          class="btn btn-secondary"
+          :disabled="product.availability === 'agotado'"
+          @click="emit('addToCart', product)"
+        >
           {{ product.availability === 'agotado' ? 'Agotado' : 'Agregar' }}
         </button>
       </div>
