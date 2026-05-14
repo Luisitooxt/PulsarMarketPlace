@@ -1,3 +1,9 @@
+<script setup lang="ts">
+import { products } from '~/data/products'
+
+const featuredProducts = products.filter((product) => product.featured).slice(0, 6)
+</script>
+
 <template>
   <div class="page">
     <header class="navbar">
@@ -164,44 +170,17 @@
             <span class="badge">Catálogo inicial</span>
             <h2>Productos destacados</h2>
             <p>
-              En el siguiente bloque construiremos el catálogo real con tarjetas de
-              productos, búsqueda, filtros, precios y disponibilidad.
+              Estos productos son datos simulados para construir la primera versión funcional
+              del catálogo. Después se conectarán a la base de datos y al sistema de sincronización.
             </p>
           </div>
 
           <div class="featured-grid">
-            <article class="product-card card">
-              <div class="product-media">CAM</div>
-              <span>Cámaras</span>
-              <h3>Cámara IP de videovigilancia</h3>
-              <p>Ideal para monitoreo residencial, comercial e industrial.</p>
-              <div class="product-bottom">
-                <strong>$2,499 MXN</strong>
-                <button class="btn btn-secondary">Agregar</button>
-              </div>
-            </article>
-
-            <article class="product-card card">
-              <div class="product-media">NVR</div>
-              <span>DVR / NVR</span>
-              <h3>Grabador de red profesional</h3>
-              <p>Solución para administración y respaldo de video.</p>
-              <div class="product-bottom">
-                <strong>$3,299 MXN</strong>
-                <button class="btn btn-secondary">Agregar</button>
-              </div>
-            </article>
-
-            <article class="product-card card">
-              <div class="product-media">KIT</div>
-              <span>Kits</span>
-              <h3>Kit de seguridad completo</h3>
-              <p>Paquete listo para instalación en hogar o negocio.</p>
-              <div class="product-bottom">
-                <strong>$6,899 MXN</strong>
-                <button class="btn btn-secondary">Agregar</button>
-              </div>
-            </article>
+            <ProductCard
+              v-for="product in featuredProducts"
+              :key="product.id"
+              :product="product"
+            />
           </div>
         </div>
       </section>
@@ -374,8 +353,7 @@
 
 .panel-header,
 .footer-content,
-.checkout-summary div,
-.product-bottom {
+.checkout-summary div {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -428,8 +406,7 @@
 }
 
 .cart-item strong,
-.checkout-summary strong,
-.product-card strong {
+.checkout-summary strong {
   color: #67e8f9;
 }
 
@@ -483,13 +460,11 @@
   gap: 18px;
 }
 
-.category-card,
-.product-card {
+.category-card {
   padding: 24px;
 }
 
-.category-card span,
-.product-card span {
+.category-card span {
   color: #67e8f9;
   font-weight: 900;
 }
@@ -498,37 +473,13 @@
   margin: 14px 0 10px;
 }
 
-.category-card p,
-.product-card p {
+.category-card p {
   color: #94a3b8;
   line-height: 1.6;
 }
 
 .products-section {
   background: rgba(15, 23, 42, 0.28);
-}
-
-.product-media {
-  height: 180px;
-  border-radius: 20px;
-  display: grid;
-  place-items: center;
-  margin-bottom: 18px;
-  background:
-    radial-gradient(circle at center, rgba(34, 211, 238, 0.24), transparent 70%),
-    rgba(2, 6, 23, 0.68);
-  color: #67e8f9;
-  font-size: 32px;
-  font-weight: 900;
-}
-
-.product-card h3 {
-  margin: 10px 0;
-}
-
-.product-bottom {
-  margin-top: 22px;
-  gap: 14px;
 }
 
 .purchase-card {
