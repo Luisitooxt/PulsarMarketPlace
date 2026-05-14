@@ -8,6 +8,7 @@ const selectedCategory = ref('all')
 const selectedAvailability = ref('all')
 const selectedSort = ref('featured')
 const isCartOpen = ref(false)
+const isCheckoutOpen = ref(false)
 
 const {
   cartItems,
@@ -88,6 +89,15 @@ const resetFilters = () => {
   selectedCategory.value = 'all'
   selectedAvailability.value = 'all'
   selectedSort.value = 'featured'
+}
+
+const openCheckout = () => {
+  if (!cartItems.value.length) {
+    return
+  }
+
+  isCartOpen.value = false
+  isCheckoutOpen.value = true
 }
 </script>
 
@@ -442,7 +452,11 @@ const resetFilters = () => {
             El costo de envío y disponibilidad final se confirmarán antes de emitir el pedido.
           </p>
 
-          <button class="btn btn-primary" :disabled="!cartItems.length">
+          <button
+            class="btn btn-primary"
+            :disabled="!cartItems.length"
+            @click="openCheckout"
+          >
             Continuar pedido
           </button>
 
@@ -461,6 +475,11 @@ const resetFilters = () => {
       v-if="isCartOpen"
       class="cart-overlay"
       @click="isCartOpen = false"
+    />
+
+    <CartCheckoutModal
+      v-if="isCheckoutOpen"
+      @close="isCheckoutOpen = false"
     />
 
     <footer id="contacto" class="footer">
