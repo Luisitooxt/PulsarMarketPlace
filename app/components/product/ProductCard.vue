@@ -43,7 +43,9 @@ const availabilityClass = {
         </small>
       </div>
 
-      <h3>{{ product.name }}</h3>
+      <NuxtLink :to="`/producto/${product.slug}`" class="product-title-link">
+  <h3>{{ product.name }}</h3>
+      </NuxtLink>
 
       <p>{{ product.shortDescription }}</p>
 
@@ -195,4 +197,13 @@ button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
+.product-title-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.product-title-link:hover h3 {
+  color: #67e8f9;
+}
+
 </style>
