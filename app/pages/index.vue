@@ -115,7 +115,7 @@ const openCheckout = () => {
 
         <nav class="nav-links">
           <a href="#categorias">Categorías</a>
-          <a href="#productos">Productos</a>
+          <NuxtLink to="/catalogo">Productos</NuxtLink>
           <a href="#compra">Cómo comprar</a>
           <a href="#contacto">Contacto</a>
         </nav>
@@ -144,7 +144,7 @@ const openCheckout = () => {
             </p>
 
             <div class="hero-actions">
-              <a class="btn btn-primary" href="#productos">Explorar productos</a>
+              <NuxtLink class="btn btn-primary" to="/catalogo">Explorar productos</NuxtLink>
               <a class="btn btn-secondary" href="#compra">Ver proceso de compra</a>
             </div>
 
