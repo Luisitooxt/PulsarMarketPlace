@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { products } from '~/data/products'
 
 const route = useRoute()
 const router = useRouter()
 
 const { addToCart } = useCart()
+
+const productAdded = ref(false)
 
 const product = computed(() => {
   return products.find((item) => item.slug === route.params.slug)
@@ -48,6 +50,11 @@ const addProductToCart = () => {
   }
 
   addToCart(product.value)
+  productAdded.value = true
+
+  setTimeout(() => {
+    productAdded.value = false
+  }, 2200)
 }
 
 const goBack = () => {
@@ -68,9 +75,11 @@ const goBack = () => {
             <button class="thumbnail is-active">
               {{ product.imageLabel }}
             </button>
+
             <button class="thumbnail">
               {{ product.categoryLabel.slice(0, 3).toUpperCase() }}
             </button>
+
             <button class="thumbnail">
               {{ product.brand.slice(0, 3).toUpperCase() }}
             </button>
@@ -144,8 +153,18 @@ const goBack = () => {
               :disabled="product.availability === 'agotado'"
               @click="addProductToCart"
             >
-              {{ product.availability === 'agotado' ? 'Producto agotado' : 'Agregar al carrito' }}
+              {{
+                product.availability === 'agotado'
+                  ? 'Producto agotado'
+                  : productAdded
+                    ? 'Producto agregado'
+                    : 'Agregar al carrito'
+              }}
             </button>
+
+            <p v-if="productAdded" class="added-message">
+              Producto agregado al carrito correctamente.
+            </p>
 
             <button class="btn btn-secondary" @click="goBack">
               Seguir comprando
@@ -251,7 +270,6 @@ const goBack = () => {
   border-color: #3b82f6;
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
 }
-
 
 .product-gallery {
   min-height: 560px;
@@ -384,6 +402,14 @@ const goBack = () => {
   cursor: not-allowed;
 }
 
+.added-message {
+  margin: 12px 0 0;
+  color: #86efac;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+}
+
 .payment-info {
   margin-top: 22px;
   padding: 18px;
@@ -463,7 +489,7 @@ const goBack = () => {
   }
 
   .thumbnail-column {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
   }
 
   .product-gallery {
