@@ -9,7 +9,7 @@ const selectedAvailability = ref('all')
 const selectedSort = ref('featured')
 const productAddedName = ref('')
 
-const { addToCart, totalItems } = useCart()
+const { addToCart, totalItems, openCart } = useCart()
 
 const filteredProducts = computed(() => {
   let result = [...products]
@@ -87,10 +87,10 @@ const handleAddToCart = (product: Product) => {
           <a href="#productos">Productos</a>
         </nav>
 
-        <button class="btn btn-primary cart-button">
-          Carrito
-          <span>{{ totalItems }}</span>
-        </button>
+        <button class="btn btn-primary cart-button" @click="openCart">
+  Carrito
+  <span>{{ totalItems }}</span>
+</button>
       </div>
     </header>
 

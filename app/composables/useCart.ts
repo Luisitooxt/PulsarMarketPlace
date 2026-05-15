@@ -6,8 +6,31 @@ export interface CartItem {
 }
 
 const cartItems = ref<CartItem[]>([])
+const isCartOpen = ref(false)
+const isCheckoutOpen = ref(false)
 
 export const useCart = () => {
+  const openCart = () => {
+    isCartOpen.value = true
+  }
+
+  const closeCart = () => {
+    isCartOpen.value = false
+  }
+
+  const openCheckout = () => {
+    if (!cartItems.value.length) {
+      return
+    }
+
+    isCartOpen.value = false
+    isCheckoutOpen.value = true
+  }
+
+  const closeCheckout = () => {
+    isCheckoutOpen.value = false
+  }
+
   const addToCart = (product: Product) => {
     if (product.availability === 'agotado') {
       return
@@ -69,6 +92,12 @@ export const useCart = () => {
 
   return {
     cartItems,
+    isCartOpen,
+    isCheckoutOpen,
+    openCart,
+    closeCart,
+    openCheckout,
+    closeCheckout,
     addToCart,
     removeFromCart,
     increaseQuantity,
