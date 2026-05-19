@@ -5,11 +5,12 @@ export interface CartItem {
   quantity: number
 }
 
-const cartItems = ref<CartItem[]>([])
-const isCartOpen = ref(false)
-const isCheckoutOpen = ref(false)
-
 export const useCart = () => {
+  const cartItems = useState<CartItem[]>('cart-items', () => [])
+  const isCartOpen = useState<boolean>('is-cart-open', () => false)
+  const isCheckoutOpen = useState<boolean>('is-checkout-open', () => false)
+
+  // Actions
   const openCart = () => {
     isCartOpen.value = true
   }
@@ -18,11 +19,12 @@ export const useCart = () => {
     isCartOpen.value = false
   }
 
-  const openCheckout = () => {
-    if (!cartItems.value.length) {
-      return
-    }
+  const toggleCart = () => {
+    isCartOpen.value = !isCartOpen.value
+  }
 
+  const openCheckout = () => {
+    if (!cartItems.value.length) return
     isCartOpen.value = false
     isCheckoutOpen.value = true
   }
@@ -32,21 +34,18 @@ export const useCart = () => {
   }
 
   const addToCart = (product: Product) => {
-    if (product.availability === 'agotado') {
-      return
-    }
+    if (product.availability === 'agotado') return
 
     const existingItem = cartItems.value.find((item) => item.product.id === product.id)
 
     if (existingItem) {
       existingItem.quantity += 1
-      return
+    } else {
+      cartItems.value.push({
+        product,
+        quantity: 1
+      })
     }
-
-    cartItems.value.push({
-      product,
-      quantity: 1
-    })
   }
 
   const removeFromCart = (productId: number) => {
@@ -54,32 +53,26 @@ export const useCart = () => {
   }
 
   const increaseQuantity = (productId: number) => {
-    const item = cartItems.value.find((cartItem) => cartItem.product.id === productId)
-
-    if (item) {
-      item.quantity += 1
-    }
+    const item = cartItems.value.find((item) => item.product.id === productId)
+    if (item) item.quantity += 1
   }
 
   const decreaseQuantity = (productId: number) => {
-    const item = cartItems.value.find((cartItem) => cartItem.product.id === productId)
-
-    if (!item) {
-      return
-    }
+    const item = cartItems.value.find((item) => item.product.id === productId)
+    if (!item) return
 
     if (item.quantity === 1) {
       removeFromCart(productId)
-      return
+    } else {
+      item.quantity -= 1
     }
-
-    item.quantity -= 1
   }
 
   const clearCart = () => {
     cartItems.value = []
   }
 
+  // Getters
   const totalItems = computed(() => {
     return cartItems.value.reduce((total, item) => total + item.quantity, 0)
   })
@@ -90,12 +83,34 @@ export const useCart = () => {
     }, 0)
   })
 
+  // Persistence (Client-side only)
+  if (import.meta.client) {
+    onMounted(() => {
+      const saved = localStorage.getItem('pulsar-cart')
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved)
+          if (Array.isArray(parsed)) {
+            cartItems.value = parsed
+          }
+        } catch (e) {
+          console.error('Error parsing cart from localStorage', e)
+        }
+      }
+    })
+
+    watch(cartItems, (newVal) => {
+      localStorage.setItem('pulsar-cart', JSON.stringify(newVal))
+    }, { deep: true })
+  }
+
   return {
     cartItems,
     isCartOpen,
     isCheckoutOpen,
     openCart,
     closeCart,
+    toggleCart,
     openCheckout,
     closeCheckout,
     addToCart,

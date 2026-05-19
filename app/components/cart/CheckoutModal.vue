@@ -12,7 +12,8 @@ const customerAddress = ref('')
 const customerNotes = ref('')
 const orderConfirmed = ref(false)
 
-const whatsappNumber = '5214420000000'
+const config = useRuntimeConfig()
+const whatsappNumber = config.public.whatsappNumber
 
 const formatPrice = (price: number) => {
   return new Intl.NumberFormat('es-MX', {

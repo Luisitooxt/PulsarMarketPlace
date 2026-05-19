@@ -2,6 +2,16 @@
 import { computed, ref } from 'vue'
 import { categories, products } from '~/data/products'
 import type { Product } from '~/types/product'
+import AppNavbar from '~/components/layout/AppNavbar.vue'
+import AppFooter from '~/components/layout/AppFooter.vue'
+import ProductCard from '~/components/product/ProductCard.vue'
+
+useSeoMeta({
+  title: 'Catálogo de Productos - Pulsar MarketPlace',
+  description: 'Explora nuestro catálogo completo de seguridad electrónica. Cámaras IP, DVRs, kits de seguridad y más.',
+  ogTitle: 'Catálogo de Seguridad - Pulsar MarketPlace',
+  ogDescription: 'Equipos profesionales para videovigilancia y control de acceso.'
+})
 
 const searchQuery = ref('')
 const selectedCategory = ref('all')
@@ -9,7 +19,7 @@ const selectedAvailability = ref('all')
 const selectedSort = ref('featured')
 const productAddedName = ref('')
 
-const { addToCart, totalItems, openCart } = useCart()
+const { addToCart, openCart } = useCart()
 
 const filteredProducts = computed(() => {
   let result = [...products]
@@ -70,149 +80,132 @@ const handleAddToCart = (product: Product) => {
 </script>
 
 <template>
-  <main class="catalog-page">
-    <header class="catalog-navbar">
-      <div class="container catalog-navbar-content">
-        <NuxtLink to="/" class="brand">
-          <div class="brand-icon">P</div>
+  <div class="page">
+    <AppNavbar />
+
+    <main class="catalog-page">
+      <section class="catalog-hero">
+        <div class="container catalog-hero-grid">
           <div>
-            <strong>Pulsar MarketPlace</strong>
-            <span>Catálogo de seguridad electrónica</span>
+            <span class="badge">Catálogo especializado</span>
+            <h1>Encuentra equipos de seguridad electrónica para tu proyecto</h1>
+            <p>
+              Explora cámaras de videovigilancia, DVR/NVR, kits de seguridad, motores para
+              portones, pistones automáticos e interphones. Usa los filtros para encontrar
+              rápidamente el producto que necesitas.
+            </p>
           </div>
-        </NuxtLink>
 
-        <nav class="nav-links">
-          <NuxtLink to="/">Inicio</NuxtLink>
-          <NuxtLink to="/catalogo">Catálogo</NuxtLink>
-          <a href="#productos">Productos</a>
-        </nav>
-
-        <button class="btn btn-primary cart-button" @click="openCart">
-  Carrito
-  <span>{{ totalItems }}</span>
-</button>
-      </div>
-    </header>
-
-    <section class="catalog-hero">
-      <div class="container catalog-hero-grid">
-        <div>
-          <span class="badge">Catálogo especializado</span>
-          <h1>Encuentra equipos de seguridad electrónica para tu proyecto</h1>
-          <p>
-            Explora cámaras de videovigilancia, DVR/NVR, kits de seguridad, motores para
-            portones, pistones automáticos e interphones. Usa los filtros para encontrar
-            rápidamente el producto que necesitas.
-          </p>
+          <div class="catalog-info-card card">
+            <strong>{{ products.length }}</strong>
+            <span>productos iniciales</span>
+            <p>
+              Este catálogo usa datos simulados. Más adelante se conectará a base de datos
+              y a proveedores oficiales.
+            </p>
+          </div>
         </div>
+      </section>
 
-        <div class="catalog-info-card card">
-          <strong>{{ products.length }}</strong>
-          <span>productos iniciales</span>
-          <p>
-            Este catálogo usa datos simulados. Más adelante se conectará a base de datos
-            y a proveedores oficiales.
-          </p>
-        </div>
-      </div>
-    </section>
+      <section id="productos" class="section">
+        <div class="container">
+          <div v-if="productAddedName" class="added-toast">
+            Producto agregado al carrito: <strong>{{ productAddedName }}</strong>
+          </div>
 
-    <section id="productos" class="section">
-      <div class="container">
-        <div v-if="productAddedName" class="added-toast">
-          Producto agregado al carrito: <strong>{{ productAddedName }}</strong>
-        </div>
-
-        <div class="catalog-layout">
-          <aside class="filters-panel card">
-            <div class="filters-header">
-              <h2>Filtros</h2>
-              <button class="clear-button" @click="resetFilters">
-                Limpiar
-              </button>
-            </div>
-
-            <div class="filter-control">
-              <label for="search">Buscar producto</label>
-              <input
-                id="search"
-                v-model="searchQuery"
-                type="text"
-                placeholder="Nombre, marca, SKU..."
-              >
-            </div>
-
-            <div class="filter-control">
-              <label for="category">Categoría</label>
-              <select id="category" v-model="selectedCategory">
-                <option value="all">Todas las categorías</option>
-                <option
-                  v-for="category in categories"
-                  :key="category.id"
-                  :value="category.id"
-                >
-                  {{ category.name }}
-                </option>
-              </select>
-            </div>
-
-            <div class="filter-control">
-              <label for="availability">Disponibilidad</label>
-              <select id="availability" v-model="selectedAvailability">
-                <option value="all">Todas</option>
-                <option value="disponible">Disponible</option>
-                <option value="bajo-stock">Bajo stock</option>
-                <option value="agotado">Agotado</option>
-              </select>
-            </div>
-
-            <div class="filter-control">
-              <label for="sort">Ordenar por</label>
-              <select id="sort" v-model="selectedSort">
-                <option value="featured">Destacados</option>
-                <option value="price-asc">Precio menor a mayor</option>
-                <option value="price-desc">Precio mayor a menor</option>
-                <option value="name">Nombre A-Z</option>
-              </select>
-            </div>
-          </aside>
-
-          <section class="catalog-results">
-            <div class="results-header">
-              <div>
-                <span class="badge">Productos</span>
-                <h2>Catálogo completo</h2>
+          <div class="catalog-layout">
+            <aside class="filters-panel card">
+              <div class="filters-header">
+                <h2>Filtros</h2>
+                <button class="clear-button" @click="resetFilters">
+                  Limpiar
+                </button>
               </div>
 
-              <p>
-                Mostrando <strong>{{ filteredProducts.length }}</strong> de
-                <strong>{{ products.length }}</strong> productos
-              </p>
-            </div>
+              <div class="filter-control">
+                <label for="search">Buscar producto</label>
+                <input
+                  id="search"
+                  v-model="searchQuery"
+                  type="text"
+                  placeholder="Nombre, marca, SKU..."
+                >
+              </div>
 
-            <div v-if="filteredProducts.length" class="products-grid">
-              <ProductCard
-                v-for="product in filteredProducts"
-                :key="product.id"
-                :product="product"
-                @add-to-cart="handleAddToCart"
-              />
-            </div>
+              <div class="filter-control">
+                <label for="category">Categoría</label>
+                <select id="category" v-model="selectedCategory">
+                  <option value="all">Todas las categorías</option>
+                  <option
+                    v-for="category in categories"
+                    :key="category.id"
+                    :value="category.id"
+                  >
+                    {{ category.name }}
+                  </option>
+                </select>
+              </div>
 
-            <div v-else class="empty-state card">
-              <h3>No encontramos productos</h3>
-              <p>
-                Intenta limpiar los filtros o buscar con otra palabra clave.
-              </p>
-              <button class="btn btn-primary" @click="resetFilters">
-                Ver todos los productos
-              </button>
-            </div>
-          </section>
+              <div class="filter-control">
+                <label for="availability">Disponibilidad</label>
+                <select id="availability" v-model="selectedAvailability">
+                  <option value="all">Todas</option>
+                  <option value="disponible">Disponible</option>
+                  <option value="bajo-stock">Bajo stock</option>
+                  <option value="agotado">Agotado</option>
+                </select>
+              </div>
+
+              <div class="filter-control">
+                <label for="sort">Ordenar por</label>
+                <select id="sort" v-model="selectedSort">
+                  <option value="featured">Destacados</option>
+                  <option value="price-asc">Precio menor a mayor</option>
+                  <option value="price-desc">Precio mayor a menor</option>
+                  <option value="name">Nombre A-Z</option>
+                </select>
+              </div>
+            </aside>
+
+            <section class="catalog-results">
+              <div class="results-header">
+                <div>
+                  <span class="badge">Productos</span>
+                  <h2>Catálogo completo</h2>
+                </div>
+
+                <p>
+                  Mostrando <strong>{{ filteredProducts.length }}</strong> de
+                  <strong>{{ products.length }}</strong> productos
+                </p>
+              </div>
+
+              <div v-if="filteredProducts.length" class="products-grid">
+                <ProductCard
+                  v-for="product in filteredProducts"
+                  :key="product.id"
+                  :product="product"
+                  @add-to-cart="handleAddToCart"
+                />
+              </div>
+
+              <div v-else class="empty-state card">
+                <h3>No encontramos productos</h3>
+                <p>
+                  Intenta limpiar los filtros o buscar con otra palabra clave.
+                </p>
+                <button class="btn btn-primary" @click="resetFilters">
+                  Ver todos los productos
+                </button>
+              </div>
+            </section>
+          </div>
         </div>
-      </div>
-    </section>
-  </main>
+      </section>
+    </main>
+
+    <AppFooter />
+  </div>
 </template>
 
 <style scoped>
@@ -223,85 +216,6 @@ const handleAddToCart = (product: Product) => {
     radial-gradient(circle at top right, rgba(59, 130, 246, 0.10), transparent 32rem),
     #020617;
   color: #e5f3ff;
-}
-
-.catalog-navbar {
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  background: rgba(2, 6, 23, 0.86);
-  backdrop-filter: blur(18px);
-  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
-}
-
-.catalog-navbar-content {
-  min-height: 78px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: inherit;
-  text-decoration: none;
-}
-
-.brand-icon {
-  width: 42px;
-  height: 42px;
-  border-radius: 14px;
-  display: grid;
-  place-items: center;
-  background: linear-gradient(135deg, #06b6d4, #2563eb);
-  font-weight: 900;
-  color: white;
-}
-
-.brand strong {
-  display: block;
-  font-size: 16px;
-}
-
-.brand span {
-  display: block;
-  color: #94a3b8;
-  font-size: 12px;
-}
-
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: 22px;
-  color: #cbd5e1;
-  font-size: 14px;
-}
-
-.nav-links a {
-  color: inherit;
-  text-decoration: none;
-}
-
-.nav-links a:hover {
-  color: #67e8f9;
-}
-
-.cart-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.cart-button span {
-  min-width: 24px;
-  height: 24px;
-  display: grid;
-  place-items: center;
-  border-radius: 999px;
-  background: rgba(2, 6, 23, 0.35);
 }
 
 .catalog-hero {
@@ -415,22 +329,6 @@ const handleAddToCart = (product: Product) => {
   font-size: 14px;
 }
 
-input,
-select {
-  width: 100%;
-  border: 1px solid rgba(148, 163, 184, 0.22);
-  border-radius: 14px;
-  padding: 13px 14px;
-  background: rgba(2, 6, 23, 0.72);
-  color: #e5f3ff;
-  outline: none;
-}
-
-input:focus,
-select:focus {
-  border-color: rgba(34, 211, 238, 0.7);
-}
-
 .results-header {
   display: flex;
   justify-content: space-between;
@@ -494,16 +392,6 @@ select:focus {
 }
 
 @media (max-width: 720px) {
-  .catalog-navbar-content {
-    align-items: flex-start;
-    flex-direction: column;
-    padding: 18px 0;
-  }
-
-  .nav-links {
-    flex-wrap: wrap;
-  }
-
   .products-grid {
     grid-template-columns: 1fr;
   }

@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { products } from '~/data/products'
+import AppNavbar from '~/components/layout/AppNavbar.vue'
+import AppFooter from '~/components/layout/AppFooter.vue'
+import ProductCard from '~/components/product/ProductCard.vue'
 
 const route = useRoute()
 const router = useRouter()
 
-const { addToCart } = useCart()
+const { addToCart, openCart } = useCart()
 
 const productAdded = ref(false)
 
@@ -51,6 +54,7 @@ const addProductToCart = () => {
 
   addToCart(product.value)
   productAdded.value = true
+  openCart()
 
   setTimeout(() => {
     productAdded.value = false
@@ -58,160 +62,179 @@ const addProductToCart = () => {
 }
 
 const goBack = () => {
-  router.push('/#productos')
+  router.push('/catalogo')
 }
+
+// SEO Meta
+watchEffect(() => {
+  if (product.value) {
+    useSeoMeta({
+      title: `${product.value.name} - Pulsar MarketPlace`,
+      description: product.value.shortDescription,
+      ogTitle: product.value.name,
+      ogDescription: product.value.shortDescription,
+      ogImage: '/favicon.ico'
+    })
+  }
+})
 </script>
 
 <template>
-  <main class="product-page">
-    <section v-if="product" class="product-detail">
-      <div class="container">
-        <button class="back-button" @click="goBack">
-          ← Volver al catálogo
-        </button>
+  <div class="page">
+    <AppNavbar />
 
-        <div class="product-layout">
-          <aside class="thumbnail-column">
-            <button class="thumbnail is-active">
-              {{ product.imageLabel }}
-            </button>
-
-            <button class="thumbnail">
-              {{ product.categoryLabel.slice(0, 3).toUpperCase() }}
-            </button>
-
-            <button class="thumbnail">
-              {{ product.brand.slice(0, 3).toUpperCase() }}
-            </button>
-          </aside>
-
-          <section class="product-gallery card">
-            <div class="product-main-image">
-              <span>{{ product.imageLabel }}</span>
-            </div>
-          </section>
-
-          <section class="product-info">
-            <span class="badge">{{ product.categoryLabel }}</span>
-
-            <h1>{{ product.name }}</h1>
-
-            <p class="description">
-              {{ product.shortDescription }}
-            </p>
-
-            <ul class="feature-list">
-              <li v-for="spec in product.specs" :key="spec">
-                {{ spec }}
-              </li>
-            </ul>
-
-            <div class="technical-data">
-              <div>
-                <span>Modelo</span>
-                <strong>{{ product.sku }}</strong>
-              </div>
-
-              <div>
-                <span>Marca</span>
-                <strong>{{ product.brand }}</strong>
-              </div>
-
-              <div>
-                <span>Categoría</span>
-                <strong>{{ product.categoryLabel }}</strong>
-              </div>
-
-              <div>
-                <span>Disponibilidad</span>
-                <strong>{{ availabilityLabel }}</strong>
-              </div>
-            </div>
-          </section>
-
-          <aside class="purchase-panel card">
-            <span class="badge">Compra segura</span>
-
-            <div class="price-box">
-              <span>Precio final</span>
-              <strong>{{ formatPrice(product.price) }}</strong>
-              <small v-if="product.oldPrice">
-                Antes {{ formatPrice(product.oldPrice) }}
-              </small>
-            </div>
-
-            <div class="stock-box">
-              <span>Stock estimado</span>
-              <strong>{{ product.stock }} unidades</strong>
-              <small>
-                La disponibilidad final se confirma antes de emitir el pedido.
-              </small>
-            </div>
-
-            <button
-              class="btn btn-primary"
-              :disabled="product.availability === 'agotado'"
-              @click="addProductToCart"
-            >
-              {{
-                product.availability === 'agotado'
-                  ? 'Producto agotado'
-                  : productAdded
-                    ? 'Producto agregado'
-                    : 'Agregar al carrito'
-              }}
-            </button>
-
-            <p v-if="productAdded" class="added-message">
-              Producto agregado al carrito correctamente.
-            </p>
-
-            <button class="btn btn-secondary" @click="goBack">
-              Seguir comprando
-            </button>
-
-            <div class="payment-info">
-              <h3>Proceso de compra</h3>
-              <p>
-                Después de confirmar tu pedido, recibirás instrucciones para realizar el pago
-                por transferencia y enviar tu comprobante por WhatsApp.
-              </p>
-            </div>
-          </aside>
-        </div>
-
-        <section v-if="relatedProducts.length" class="related-section">
-          <div class="section-heading">
-            <span class="badge">Productos relacionados</span>
-            <h2>También podrían interesarte</h2>
-          </div>
-
-          <div class="related-grid">
-            <ProductCard
-              v-for="item in relatedProducts"
-              :key="item.id"
-              :product="item"
-              @add-to-cart="addToCart"
-            />
-          </div>
-        </section>
-      </div>
-    </section>
-
-    <section v-else class="not-found">
-      <div class="container">
-        <div class="not-found-card card">
-          <h1>Producto no encontrado</h1>
-          <p>
-            El producto que buscas no existe o ya no está disponible en el catálogo.
-          </p>
-          <button class="btn btn-primary" @click="goBack">
-            Volver al catálogo
+    <main class="product-page">
+      <section v-if="product" class="product-detail">
+        <div class="container">
+          <button class="back-button" @click="goBack">
+            ← Volver al catálogo
           </button>
+
+          <div class="product-layout">
+            <aside class="thumbnail-column">
+              <button class="thumbnail is-active">
+                {{ product.imageLabel }}
+              </button>
+
+              <button class="thumbnail">
+                {{ product.categoryLabel.slice(0, 3).toUpperCase() }}
+              </button>
+
+              <button class="thumbnail">
+                {{ product.brand.slice(0, 3).toUpperCase() }}
+              </button>
+            </aside>
+
+            <section class="product-gallery card">
+              <div class="product-main-image">
+                <span>{{ product.imageLabel }}</span>
+              </div>
+            </section>
+
+            <section class="product-info">
+              <span class="badge">{{ product.categoryLabel }}</span>
+
+              <h1>{{ product.name }}</h1>
+
+              <p class="description">
+                {{ product.shortDescription }}
+              </p>
+
+              <ul class="feature-list">
+                <li v-for="spec in product.specs" :key="spec">
+                  {{ spec }}
+                </li>
+              </ul>
+
+              <div class="technical-data">
+                <div>
+                  <span>Modelo</span>
+                  <strong>{{ product.sku }}</strong>
+                </div>
+
+                <div>
+                  <span>Marca</span>
+                  <strong>{{ product.brand }}</strong>
+                </div>
+
+                <div>
+                  <span>Categoría</span>
+                  <strong>{{ product.categoryLabel }}</strong>
+                </div>
+
+                <div>
+                  <span>Disponibilidad</span>
+                  <strong>{{ availabilityLabel }}</strong>
+                </div>
+              </div>
+            </section>
+
+            <aside class="purchase-panel card">
+              <span class="badge">Compra segura</span>
+
+              <div class="price-box">
+                <span>Precio final</span>
+                <strong>{{ formatPrice(product.price) }}</strong>
+                <small v-if="product.oldPrice">
+                  Antes {{ formatPrice(product.oldPrice) }}
+                </small>
+              </div>
+
+              <div class="stock-box">
+                <span>Stock estimado</span>
+                <strong>{{ product.stock }} unidades</strong>
+                <small>
+                  La disponibilidad final se confirma antes de emitir el pedido.
+                </small>
+              </div>
+
+              <button
+                class="btn btn-primary"
+                :disabled="product.availability === 'agotado'"
+                @click="addProductToCart"
+              >
+                {{
+                  product.availability === 'agotado'
+                    ? 'Producto agotado'
+                    : productAdded
+                      ? 'Producto agregado'
+                      : 'Agregar al carrito'
+                }}
+              </button>
+
+              <p v-if="productAdded" class="added-message">
+                Producto agregado al carrito correctamente.
+              </p>
+
+              <button class="btn btn-secondary" @click="goBack">
+                Seguir comprando
+              </button>
+
+              <div class="payment-info">
+                <h3>Proceso de compra</h3>
+                <p>
+                  Después de confirmar tu pedido, recibirás instrucciones para realizar el pago
+                  por transferencia y enviar tu comprobante por WhatsApp.
+                </p>
+              </div>
+            </aside>
+          </div>
+
+          <section v-if="relatedProducts.length" class="related-section">
+            <div class="section-heading">
+              <span class="badge">Productos relacionados</span>
+              <h2>También podrían interesarte</h2>
+            </div>
+
+            <div class="related-grid">
+              <ProductCard
+                v-for="item in relatedProducts"
+                :key="item.id"
+                :product="item"
+                @add-to-cart="addToCart"
+              />
+            </div>
+          </section>
         </div>
-      </div>
-    </section>
-  </main>
+      </section>
+
+      <section v-else class="not-found">
+        <div class="container">
+          <div class="not-found-card card">
+            <h1>Producto no encontrado</h1>
+            <p>
+              El producto que buscas no existe o ya no está disponible en el catálogo.
+            </p>
+            <button class="btn btn-primary" @click="goBack">
+              Volver al catálogo
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <AppFooter />
+  </div>
 </template>
 
 <style scoped>
