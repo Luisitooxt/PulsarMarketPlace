@@ -11,6 +11,7 @@ const customerEmail = ref('')
 const customerAddress = ref('')
 const customerNotes = ref('')
 const orderConfirmed = ref(false)
+const formSubmitted = ref(false)
 
 const config = useRuntimeConfig()
 const whatsappNumber = config.public.whatsappNumber
@@ -21,6 +22,59 @@ const formatPrice = (price: number) => {
     currency: 'MXN'
   }).format(price)
 }
+
+const onlyNumbers = (event: Event) => {
+  const input = event.target as HTMLInputElement
+  input.value = input.value.replace(/\D/g, '').slice(0, 10)
+  customerPhone.value = input.value
+}
+
+const isValidEmail = computed(() => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return emailRegex.test(customerEmail.value.trim())
+})
+
+const isValidPhone = computed(() => {
+  return /^[0-9]{10}$/.test(customerPhone.value.trim())
+})
+
+const nameError = computed(() => {
+  if (!formSubmitted.value) return ''
+  if (!customerName.value.trim()) return 'El nombre completo es obligatorio.'
+  if (customerName.value.trim().length < 5) return 'Escribe tu nombre completo.'
+  return ''
+})
+
+const phoneError = computed(() => {
+  if (!formSubmitted.value) return ''
+  if (!customerPhone.value.trim()) return 'El teléfono es obligatorio.'
+  if (!isValidPhone.value) return 'El teléfono debe contener exactamente 10 números.'
+  return ''
+})
+
+const emailError = computed(() => {
+  if (!formSubmitted.value) return ''
+  if (!customerEmail.value.trim()) return 'El correo electrónico es obligatorio.'
+  if (!isValidEmail.value) return 'Escribe un correo electrónico válido.'
+  return ''
+})
+
+const addressError = computed(() => {
+  if (!formSubmitted.value) return ''
+  if (!customerAddress.value.trim()) return 'La dirección de entrega es obligatoria.'
+  if (customerAddress.value.trim().length < 12) return 'Agrega una dirección más completa.'
+  return ''
+})
+
+const canConfirmOrder = computed(() => {
+  return (
+    cartItems.value.length > 0 &&
+    customerName.value.trim().length >= 5 &&
+    isValidPhone.value &&
+    isValidEmail.value &&
+    customerAddress.value.trim().length >= 12
+  )
+})
 
 const orderSummary = computed(() => {
   return cartItems.value
@@ -34,11 +88,15 @@ const whatsappMessage = computed(() => {
   return encodeURIComponent(
     `Hola, soy ${customerName.value}. Ya realicé mi pedido en Pulsar MarketPlace y quiero enviar mi comprobante de pago.\n\n` +
     `Resumen del pedido:\n${orderSummary.value}\n\n` +
+    `Productos: ${totalItems.value}\n` +
     `Subtotal: ${formatPrice(subtotal.value)}\n\n` +
+    `Datos del cliente:\n` +
+    `Nombre: ${customerName.value}\n` +
     `Teléfono: ${customerPhone.value}\n` +
     `Correo: ${customerEmail.value}\n` +
     `Dirección: ${customerAddress.value}\n\n` +
-    `Notas: ${customerNotes.value || 'Sin notas adicionales'}`
+    `Notas: ${customerNotes.value || 'Sin notas adicionales'}\n\n` +
+    `Adjunto mi comprobante de pago para validación.`
   )
 })
 
@@ -46,17 +104,9 @@ const whatsappLink = computed(() => {
   return `https://wa.me/${whatsappNumber}?text=${whatsappMessage.value}`
 })
 
-const canConfirmOrder = computed(() => {
-  return (
-    cartItems.value.length > 0 &&
-    customerName.value.trim() &&
-    customerPhone.value.trim() &&
-    customerEmail.value.trim() &&
-    customerAddress.value.trim()
-  )
-})
-
 const confirmOrder = () => {
+  formSubmitted.value = true
+
   if (!canConfirmOrder.value) {
     return
   }
@@ -78,7 +128,8 @@ const finishOrder = () => {
           <span class="badge">Confirmación de pedido</span>
           <h2>Finalizar compra</h2>
           <p>
-            Completa tus datos para generar la confirmación del pedido.
+            Completa tus datos para generar la confirmación del pedido y continuar
+            con el pago por transferencia.
           </p>
         </div>
 
@@ -89,60 +140,86 @@ const finishOrder = () => {
 
       <div v-if="!orderConfirmed" class="checkout-grid">
         <form class="checkout-form" @submit.prevent="confirmOrder">
-          <div>
+          <div class="form-group">
             <label for="name">Nombre completo</label>
             <input
               id="name"
-              v-model="customerName"
+              v-model.trim="customerName"
               type="text"
-              placeholder="Ej. José Luis Sandoval"
+              placeholder="Ej. José Luis Sandoval Fuentes"
+              autocomplete="name"
             >
+            <small v-if="nameError" class="error-message">
+              {{ nameError }}
+            </small>
           </div>
 
-          <div>
+          <div class="form-group">
             <label for="phone">Teléfono</label>
             <input
               id="phone"
               v-model="customerPhone"
               type="tel"
-              placeholder="Ej. 442 000 0000"
+              inputmode="numeric"
+              maxlength="10"
+              placeholder="Ej. 4420000000"
+              autocomplete="tel"
+              @input="onlyNumbers"
             >
+            <small v-if="phoneError" class="error-message">
+              {{ phoneError }}
+            </small>
+            <small v-else class="help-message">
+              Escribe 10 dígitos, sin espacios ni guiones.
+            </small>
           </div>
 
-          <div>
+          <div class="form-group">
             <label for="email">Correo electrónico</label>
             <input
               id="email"
-              v-model="customerEmail"
+              v-model.trim="customerEmail"
               type="email"
               placeholder="Ej. correo@ejemplo.com"
+              autocomplete="email"
             >
+            <small v-if="emailError" class="error-message">
+              {{ emailError }}
+            </small>
           </div>
 
-          <div>
+          <div class="form-group">
             <label for="address">Dirección de entrega</label>
             <textarea
               id="address"
-              v-model="customerAddress"
+              v-model.trim="customerAddress"
               rows="3"
               placeholder="Calle, número, colonia, ciudad, estado y código postal"
+              autocomplete="street-address"
             />
+            <small v-if="addressError" class="error-message">
+              {{ addressError }}
+            </small>
           </div>
 
-          <div>
+          <div class="form-group">
             <label for="notes">Notas adicionales</label>
             <textarea
               id="notes"
-              v-model="customerNotes"
+              v-model.trim="customerNotes"
               rows="3"
               placeholder="Ej. Requiero factura, confirmar disponibilidad, datos de instalación, etc."
             />
           </div>
 
+          <div class="checkout-alert">
+            <strong>Importante:</strong>
+            El pedido será confirmado por WhatsApp después de enviar el comprobante de pago.
+          </div>
+
           <button
             class="btn btn-primary"
             type="submit"
-            :disabled="!canConfirmOrder"
           >
             Confirmar pedido
           </button>
@@ -189,20 +266,48 @@ const finishOrder = () => {
         <h2>Pedido registrado correctamente</h2>
 
         <p>
-          Para continuar con el proceso, realiza tu pago por transferencia bancaria.
-          Después, envía tu comprobante por WhatsApp para que Pulsar pueda validar el pago
-          y emitir el pedido.
+          Tu pedido fue generado. Para continuar, realiza tu pago por transferencia bancaria
+          y envía el comprobante por WhatsApp para que Pulsar pueda validar el pago.
         </p>
 
         <div class="payment-instructions">
-          <h3>Instrucciones para el cliente</h3>
+          <h3>Instrucciones para finalizar la compra</h3>
 
           <ol>
             <li>Realiza el pago por transferencia bancaria.</li>
             <li>Da clic en el botón de WhatsApp.</li>
-            <li>Envía tu comprobante de pago.</li>
+            <li>Envía tu comprobante de pago en la conversación.</li>
             <li>Espera la confirmación de Pulsar para procesar tu pedido.</li>
           </ol>
+        </div>
+
+        <div class="whatsapp-preview">
+          <div class="phone-mockup">
+            <div class="phone-header">
+              <span>Pulsar</span>
+              <small>Confirmación de pago</small>
+            </div>
+
+            <div class="chat-area">
+              <div class="message received">
+                Hola, gracias por comprar en Pulsar. Envíanos tu comprobante para validar el pago.
+              </div>
+
+              <div class="message sent">
+                Hola, ya realicé mi pedido. Adjunto mi comprobante de pago.
+              </div>
+
+              <div class="image-message sent">
+                <div class="image-placeholder">
+                  Comprobante.jpg
+                </div>
+              </div>
+
+              <div class="message received">
+                Recibido. Validaremos tu pago y te confirmaremos el estado de tu pedido.
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="confirmation-actions">
@@ -285,9 +390,13 @@ const finishOrder = () => {
   gap: 16px;
 }
 
+.form-group {
+  display: grid;
+  gap: 8px;
+}
+
 .checkout-form label {
   display: block;
-  margin-bottom: 8px;
   color: #cbd5e1;
   font-weight: 700;
   font-size: 14px;
@@ -310,9 +419,28 @@ const finishOrder = () => {
   border-color: rgba(34, 211, 238, 0.7);
 }
 
-.checkout-form button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.error-message {
+  color: #fca5a5;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.help-message {
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.checkout-alert {
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(8, 47, 73, 0.42);
+  border: 1px solid rgba(34, 211, 238, 0.18);
+  color: #cbd5e1;
+  line-height: 1.5;
+}
+
+.checkout-alert strong {
+  color: #67e8f9;
 }
 
 .checkout-summary {
@@ -373,7 +501,7 @@ const finishOrder = () => {
 
 .confirmation-box {
   text-align: center;
-  max-width: 760px;
+  max-width: 820px;
   margin: 0 auto;
   padding: 24px 0;
 }
@@ -419,6 +547,89 @@ const finishOrder = () => {
 .payment-instructions li {
   margin-bottom: 10px;
   color: #cbd5e1;
+}
+
+.whatsapp-preview {
+  margin: 26px auto;
+  display: flex;
+  justify-content: center;
+}
+
+.phone-mockup {
+  width: min(360px, 100%);
+  overflow: hidden;
+  border-radius: 28px;
+  border: 1px solid rgba(34, 211, 238, 0.24);
+  background: #020617;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.38);
+}
+
+.phone-header {
+  display: grid;
+  gap: 4px;
+  padding: 16px 18px;
+  background: rgba(15, 23, 42, 0.92);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+  text-align: left;
+}
+
+.phone-header span {
+  color: white;
+  font-weight: 900;
+}
+
+.phone-header small {
+  color: #94a3b8;
+}
+
+.chat-area {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+  background:
+    radial-gradient(circle at top left, rgba(34, 211, 238, 0.12), transparent 18rem),
+    #03131f;
+}
+
+.message {
+  max-width: 82%;
+  padding: 11px 13px;
+  border-radius: 16px;
+  color: #e5f3ff;
+  font-size: 13px;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.message.received {
+  justify-self: start;
+  background: rgba(15, 23, 42, 0.95);
+  border-top-left-radius: 4px;
+}
+
+.message.sent,
+.image-message.sent {
+  justify-self: end;
+  background: rgba(8, 145, 178, 0.42);
+  border-top-right-radius: 4px;
+}
+
+.image-message {
+  max-width: 72%;
+  padding: 8px;
+  border-radius: 16px;
+}
+
+.image-placeholder {
+  height: 92px;
+  min-width: 180px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(226, 232, 240, 0.18), rgba(103, 232, 249, 0.22));
+  color: #e5f3ff;
+  font-size: 13px;
+  font-weight: 800;
 }
 
 .confirmation-actions {
