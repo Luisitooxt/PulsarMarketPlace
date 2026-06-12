@@ -1,9 +1,11 @@
 <template>
-  <section id="compra" class="section">
+  <section id="proceso" class="section">
     <div class="container purchase-card card">
       <div>
         <span class="badge">Proceso de compra</span>
+
         <h2>Compra con confirmación de pago por WhatsApp</h2>
+
         <p>
           El cliente podrá agregar productos al carrito, llenar sus datos de contacto
           y confirmar su pedido. Después recibirá instrucciones para realizar el pago
@@ -16,18 +18,22 @@
           <span>1</span>
           <p>Agrega productos al carrito</p>
         </div>
+
         <div>
           <span>2</span>
           <p>Llena tus datos de contacto y entrega</p>
         </div>
+
         <div>
           <span>3</span>
           <p>Confirma tu pedido</p>
         </div>
+
         <div>
           <span>4</span>
           <p>Realiza el pago por transferencia</p>
         </div>
+
         <div>
           <span>5</span>
           <p>Envía tu comprobante por WhatsApp</p>
@@ -40,6 +46,7 @@
 <style scoped>
 .section {
   padding: 80px 0;
+  scroll-margin-top: 120px;
 }
 
 .purchase-card {
@@ -82,6 +89,7 @@
   height: 32px;
   display: grid;
   place-items: center;
+  flex-shrink: 0;
   border-radius: 50%;
   background: rgba(34, 211, 238, 0.18);
   color: #67e8f9;
