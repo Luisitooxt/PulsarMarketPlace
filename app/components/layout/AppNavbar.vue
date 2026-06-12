@@ -1,23 +1,19 @@
-<script setup lang="ts">
-const { totalItems, openCart } = useCart()
-</script>
-
 <template>
   <header class="navbar">
     <div class="container navbar-content">
       <NuxtLink to="/" class="brand">
-        <div class="brand-icon">P</div>
-        <div>
-          <strong>Pulsar MarketPlace</strong>
-          <span>Seguridad electrónica y control de acceso</span>
-        </div>
+        <img
+          src="/images/LogoPulsar.png"
+          alt="Pulsar Tecnologías de Seguridad y Control de Acceso"
+          class="brand-logo"
+        >
       </NuxtLink>
 
       <nav class="nav-links">
-        <a href="/#categorias">Categorías</a>
+        <NuxtLink to="/#categorias">Categorías</NuxtLink>
         <NuxtLink to="/catalogo">Productos</NuxtLink>
-        <a href="/#compra">Cómo comprar</a>
-        <a href="/#contacto">Contacto</a>
+        <NuxtLink to="/#proceso">Cómo comprar</NuxtLink>
+        <NuxtLink to="/#contacto">Contacto</NuxtLink>
       </nav>
 
       <button class="btn btn-primary cart-button" @click="openCart">
@@ -28,66 +24,55 @@ const { totalItems, openCart } = useCart()
   </header>
 </template>
 
+<script setup lang="ts">
+const { totalItems, openCart } = useCart()
+</script>
+
 <style scoped>
 .navbar {
   position: sticky;
   top: 0;
-  z-index: 20;
-  background: rgba(2, 6, 23, 0.86);
+  z-index: 30;
+  background: rgba(2, 6, 23, 0.9);
   backdrop-filter: blur(18px);
   border-bottom: 1px solid rgba(148, 163, 184, 0.14);
 }
 
 .navbar-content {
-  min-height: 78px;
+  min-height: 86px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
+  gap: 28px;
 }
 
 .brand {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 12px;
   text-decoration: none;
-  color: inherit;
 }
 
-.brand-icon {
-  width: 42px;
-  height: 42px;
-  border-radius: 14px;
-  display: grid;
-  place-items: center;
-  background: linear-gradient(135deg, #06b6d4, #2563eb);
-  font-weight: 900;
-  color: white;
-}
-
-.brand strong {
+.brand-logo {
+  width: 250px;
+  height: 64px;
   display: block;
-  font-size: 16px;
-}
-
-.brand span {
-  display: block;
-  color: #94a3b8;
-  font-size: 12px;
+  object-fit: contain;
+  object-position: left center;
+  filter: drop-shadow(0 10px 24px rgba(37, 99, 235, 0.16));
 }
 
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 22px;
+  gap: 24px;
   color: #cbd5e1;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .nav-links a {
-  text-decoration: none;
   color: inherit;
-  transition: color 0.2s;
+  text-decoration: none;
+  font-weight: 600;
 }
 
 .nav-links a:hover {
@@ -98,27 +83,56 @@ const { totalItems, openCart } = useCart()
   display: inline-flex;
   align-items: center;
   gap: 10px;
+  white-space: nowrap;
 }
 
 .cart-button span {
-  min-width: 24px;
-  height: 24px;
+  min-width: 26px;
+  height: 26px;
   display: grid;
   place-items: center;
   border-radius: 999px;
   background: rgba(2, 6, 23, 0.35);
 }
 
-@media (max-width: 900px) {
+@media (max-width: 980px) {
   .navbar-content {
-    align-items: flex-start;
-    flex-direction: column;
-    padding: 18px 0;
+    flex-wrap: wrap;
+    padding: 14px 0;
+  }
+
+  .brand-logo {
+    width: 190px;
+    height: 54px;
   }
 
   .nav-links {
+    order: 3;
+    width: 100%;
+    justify-content: center;
     flex-wrap: wrap;
-    margin: 10px 0;
+  }
+}
+
+@media (max-width: 620px) {
+  .navbar-content {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .brand-logo {
+    width: 180px;
+    height: 52px;
+  }
+
+  .nav-links {
+    justify-content: flex-start;
+    gap: 18px;
+  }
+
+  .cart-button {
+    width: 100%;
+    justify-content: center;
   }
 }
 </style>

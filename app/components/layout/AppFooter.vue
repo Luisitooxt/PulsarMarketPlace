@@ -3,12 +3,11 @@
     <div class="container footer-grid">
       <div class="footer-brand">
         <NuxtLink to="/" class="brand-link">
-          <div class="footer-logo">P</div>
-
-          <div>
-            <strong>Pulsar MarketPlace</strong>
-            <span>Seguridad electrónica, automatización y control de acceso.</span>
-          </div>
+          <img
+            src="/images/LogoPulsar.png"
+            alt="Pulsar Tecnologías de Seguridad y Control de Acceso"
+            class="footer-logo"
+          >
         </NuxtLink>
 
         <p>
@@ -44,12 +43,19 @@
         <span>Compra con confirmación por WhatsApp.</span>
         <span>Pagos por transferencia bancaria.</span>
         <span>Validación manual del comprobante.</span>
+
+        <a
+          class="contact-email"
+          href="mailto:gerencia@pulsartecnologias.com"
+        >
+          gerencia@pulsartecnologias.com
+        </a>
       </div>
     </div>
 
     <div class="container footer-bottom">
       <span>© 2026 Pulsar MarketPlace. Todos los derechos reservados.</span>
-      <span>Proyecto web en desarrollo.</span>
+      <span>Tecnologías de seguridad y control de acceso.</span>
     </div>
   </footer>
 </template>
@@ -72,41 +78,22 @@
 
 .footer-brand {
   display: grid;
-  gap: 16px;
+  gap: 18px;
 }
 
 .brand-link {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
-  color: inherit;
+  width: fit-content;
   text-decoration: none;
 }
 
 .footer-logo {
-  width: 46px;
-  height: 46px;
-  display: grid;
-  place-items: center;
-  border-radius: 16px;
-  background: linear-gradient(135deg, #06b6d4, #2563eb);
-  color: white;
-  font-weight: 900;
-  font-size: 20px;
-  box-shadow: 0 16px 38px rgba(37, 99, 235, 0.22);
-}
-
-.footer-brand strong {
+  width: 240px;
+  height: auto;
   display: block;
-  color: white;
-  font-size: 17px;
-}
-
-.footer-brand span {
-  display: block;
-  margin-top: 4px;
-  color: #94a3b8;
-  font-size: 13px;
+  object-fit: contain;
+  filter: drop-shadow(0 12px 30px rgba(37, 99, 235, 0.18));
 }
 
 .footer-brand p {
@@ -140,6 +127,17 @@
   color: #67e8f9;
 }
 
+.contact-email {
+  margin-top: 8px;
+  color: #67e8f9 !important;
+  font-weight: 700;
+  word-break: break-word;
+}
+
+.contact-email:hover {
+  color: white !important;
+}
+
 .footer-bottom {
   display: flex;
   justify-content: space-between;
@@ -159,6 +157,10 @@
 @media (max-width: 700px) {
   .footer-grid {
     grid-template-columns: 1fr;
+  }
+
+  .footer-logo {
+    width: 210px;
   }
 
   .footer-bottom {
